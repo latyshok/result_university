@@ -1,64 +1,90 @@
-import { useState, createElement } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { useState } from "react";
+import styles from "./app.module.css";
+
+function isValidValue(value) {
+	return value && value.length >= 3;
+}
+
+function formatDate(date) {
+	return new Intl.DateTimeFormat("ru-RU", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		hour12: false, // 24-часовой формат
+	})
+		.format(date)
+		.replace(", ", " ");
+}
 
 function App() {
-	// Imperative
-	const [count, setCount] = useState(0);
+	const [value, setValue] = useState("");
+	const [list, setList] = useState([]);
+	const [error, setError] = useState("");
 
-	// Imperative
-	let now = new Date();
+	const onInputButtonClick = () => {
+		const promptValue = prompt(
+			"Введите новое значение (минимум 3 символа):"
+		)?.trim();
+		if (isValidValue(promptValue)) {
+			setValue(promptValue);
+			setError("");
+		} else {
+			setError("Введенное значение должно содержать минимум 3 символа");
+		}
+	};
 
-	return createElement(
-		"div",
-		null,
-		createElement(
-			"div",
-			null,
-			createElement(
-				"a",
-				{ href: "https://vite.dev", target: "_blank" },
-				createElement("img", {
-					src: viteLogo,
-					className: "logo",
-					alt: "Vite logo",
-				})
-			),
-			createElement(
-				"a",
-				{ href: "https://react.dev", target: "_blank" },
-				createElement("img", {
-					src: reactLogo,
-					className: "logo react",
-					alt: "React logo",
-				})
-			)
-		),
-		createElement("h1", null, "Vite + React"),
-		createElement(
-			"div",
-			{ className: "card" },
-			createElement(
-				"button",
-				{ onClick: () => setCount((count) => count + 1) },
-				"count is ",
-				count
-			),
-			createElement(
-				"p",
-				null,
-				"Edit ",
-				createElement("code", null, "src/App.jsx"),
-				" and save to test HMR"
-			)
-		),
-		createElement(
-			"p",
-			{ className: "read-the-docs" },
-			"Click on the Vite and React logos to learn more"
-		),
-		createElement("p", null, now.getFullYear())
+	const onAddButtonClick = () => {
+		if (isValidValue(value)) {
+			setList((list) => [...list, { id: Date.now(), value: value }]);
+			setValue("");
+			setError("");
+		}
+	};
+
+	return (
+		<div className={styles.app}>
+			<h1 className={styles["page-heading"]}>Ввод значения</h1>
+
+			<p className={styles["no-margin-text"]}>
+				Текущее значение <code>value</code>: "
+				<output className={styles["current-value"]}>{value}</output>"
+			</p>
+
+			{error && <div className={styles.error}>{error}</div>}
+
+			<div className={styles["buttons-container"]}>
+				<button className={styles.button} onClick={onInputButtonClick}>
+					Ввести новое
+				</button>
+				<button
+					className={styles.button}
+					onClick={onAddButtonClick}
+					disabled={!isValidValue(value)}
+				>
+					Добавить в список
+				</button>
+			</div>
+
+			<div className={styles["list-container"]}>
+				<h2 className={styles["list-heading"]}>Список:</h2>
+				{list.length ? (
+					<ul className={styles.list}>
+						{list.map(({ id, value }) => (
+							<li key={id} className={styles["list-item"]}>
+								{value} ({formatDate(id)})
+							</li>
+						))}
+					</ul>
+				) : (
+					<p className={styles["no-margin-text"]}>
+						Нет добавленных элементов
+					</p>
+				)}
+			</div>
+		</div>
 	);
 }
 
